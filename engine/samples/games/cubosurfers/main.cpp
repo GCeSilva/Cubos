@@ -26,7 +26,7 @@ int main()
     cubos.plugin(spawnerPlugin);
     cubos.plugin(obstaclePlugin);
     cubos.plugin(playerPlugin);
-
+    
     cubos.startupSystem("configure settings").tagged(settingsTag).call([](Settings& settings) {
         settings.setString("assets.io.path", SAMPLE_ASSETS_FOLDER);
     });
@@ -53,15 +53,24 @@ int main()
                 }
 
                 cmds.spawn(assets.read(SceneAsset)->blueprint);
+                resetInc();
             }
         });
 
     cubos.system("detect player vs obstacle collisions")
-        .call([](Query<const Player&, const CollidingWith&, const Obstacle&> collisions) {
+        .call([](Query<const Player&, const CollidingWith&, const Obstacle&> collisions, Commands cmds, const Assets& assets, Query<Entity> all) {
             for (auto [player, collidingWith, obstacle] : collisions)
             {
                 CUBOS_INFO("Player collided with an obstacle!");
                 (void)player; // here to shut up 'unused variable warning', you can remove it
+                
+                for (auto [ent] : all)
+                {
+                    cmds.destroy(ent);
+                }
+
+                cmds.spawn(assets.read(SceneAsset)->blueprint);
+                resetInc();
             }
         });
 

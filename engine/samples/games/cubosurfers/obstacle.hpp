@@ -12,4 +12,7 @@ struct Obstacle
     float killZ{0.0F};
 };
 
+void resetInc();
+
 void obstaclePlugin(cubos::engine::Cubos& cubos);
+

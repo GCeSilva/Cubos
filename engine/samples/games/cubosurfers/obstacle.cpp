@@ -10,12 +10,22 @@
 
 using namespace cubos::engine;
 
+static float inc = 0.0F;
+static float timeBeforeInc = 3.0f;
+
+
 CUBOS_REFLECT_IMPL(Obstacle)
 {
     return cubos::core::ecs::TypeBuilder<Obstacle>("Obstacle")
         .withField("velocity", &Obstacle::velocity)
         .withField("killZ", &Obstacle::killZ)
         .build();
+}
+
+void resetInc()
+{
+    inc = 0.0F;
+    timeBeforeInc = 3.0f;
 }
 
 void obstaclePlugin(cubos::engine::Cubos& cubos)
@@ -29,7 +39,8 @@ void obstaclePlugin(cubos::engine::Cubos& cubos)
         .call([](Commands cmds, const DeltaTime& dt, Query<Entity, const Obstacle&, Position&> obstacles) {
             for (auto [ent, obstacle, position] : obstacles)
             {
-                position.vec += obstacle.velocity * dt.value();
+                glm::vec3 new_vec = obstacle.velocity - glm::vec3(0.0F, 0.0F, inc);
+                position.vec += new_vec * dt.value();
                 position.vec.y = glm::abs(glm::sin(position.vec.z * 0.15F)) * 1.5F;
 
                 if (position.vec.z < obstacle.killZ)
@@ -37,5 +48,13 @@ void obstaclePlugin(cubos::engine::Cubos& cubos)
                     cmds.destroy(ent);
                 }
             }
+            timeBeforeInc -= dt.value();
+            if (timeBeforeInc <= 0)
+            {
+                inc += 0.5f;
+                timeBeforeInc = 3.0f;
+            }
+            
         });
 }
+
