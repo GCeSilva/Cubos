@@ -11,12 +11,15 @@
 #include "obstacle.hpp"
 #include "player.hpp"
 #include "spawner.hpp"
+#include "powerup.hpp"
 
 using namespace cubos::engine;
 
 static const Asset<Scene> SceneAsset = AnyAsset("ee5bb451-05b7-430f-a641-a746f7009eef");
 static const Asset<VoxelPalette> PaletteAsset = AnyAsset("101da567-3d23-46ae-a391-c10ec00e8718");
 static const Asset<InputBindings> InputBindingsAsset = AnyAsset("b20900a4-20ee-4caa-8830-14585050bead");
+
+static bool shielded = false;
 
 int main()
 {
@@ -26,6 +29,7 @@ int main()
     cubos.plugin(spawnerPlugin);
     cubos.plugin(obstaclePlugin);
     cubos.plugin(playerPlugin);
+    cubos.plugin(powerUpPlugin);
     
     cubos.startupSystem("configure settings").tagged(settingsTag).call([](Settings& settings) {
         settings.setString("assets.io.path", SAMPLE_ASSETS_FOLDER);
@@ -58,19 +62,53 @@ int main()
         });
 
     cubos.system("detect player vs obstacle collisions")
-        .call([](Query<const Player&, const CollidingWith&, const Obstacle&> collisions, Commands cmds, const Assets& assets, Query<Entity> all) {
+        .call([](Query<const Player&, const CollidingWith&, const Obstacle&> collisions, Commands cmds, const Assets& assets, Query<Entity> all, Query<Entity, const Obstacle&> obstacles) {
             for (auto [player, collidingWith, obstacle] : collisions)
             {
-                CUBOS_INFO("Player collided with an obstacle!");
-                (void)player; // here to shut up 'unused variable warning', you can remove it
-                
-                for (auto [ent] : all)
+                if (!shielded)
                 {
-                    cmds.destroy(ent);
+                    CUBOS_INFO("Player collided with an obstacle!");
+                    (void)player; // here to shut up 'unused variable warning', you can remove it
+                    
+                    for (auto [ent] : all)
+                    {
+                        cmds.destroy(ent);
+                    }
+
+                    cmds.spawn(assets.read(SceneAsset)->blueprint);
+                    resetInc();
+                } 
+                else
+                {
+                    for(auto [ent, obstacle2] : obstacles)
+                    {
+                        if (&obstacle == &obstacle2)
+                        {
+                            cmds.destroy(ent);
+                        }
+                    }
                 }
 
-                cmds.spawn(assets.read(SceneAsset)->blueprint);
-                resetInc();
+                shielded = false;
+            }
+        });
+
+    cubos.system("detect player vs obstacle collisions")
+        .call([](Query<const Player&, const CollidingWith&, const PowerUp&> collisions, Query<Entity, const PowerUp&> powerUps, Commands cmds) {
+            for (auto [player, collidingWith, powerUp] : collisions)
+            {
+                CUBOS_INFO("Player pick a powerup!");
+                (void)player; // here to shut up 'unused variable warning', you can remove it
+
+                for (auto [ent, powerUp2] : powerUps)
+                {
+                    if (&powerUp2 == &powerUp)
+                    {
+                        shielded = true;
+                        cmds.destroy(ent);
+                    }
+                }
+                
             }
         });
 
