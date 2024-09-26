@@ -12,7 +12,5 @@ struct PowerUp
     float killZ{0.0F};
 };
 
-void resetInc();
-
 void powerUpPlugin(cubos::engine::Cubos& cubos);
 

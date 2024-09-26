@@ -4,7 +4,7 @@
 
 #include <cubos/engine/prelude.hpp>
 
-struct Obstacle
+struct Jetpack
 {
     CUBOS_REFLECT;
 
@@ -12,5 +12,5 @@ struct Obstacle
     float killZ{0.0F};
 };
 
-void obstaclePlugin(cubos::engine::Cubos& cubos);
+void jetpackPlugin(cubos::engine::Cubos& cubos);
 

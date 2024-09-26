@@ -10,9 +10,7 @@
 
 using namespace cubos::engine;
 
-static float inc = 0.0F;
-static float timeBeforeInc = 3.0f;
-
+extern float inc;
 
 CUBOS_REFLECT_IMPL(Obstacle)
 {
@@ -20,12 +18,6 @@ CUBOS_REFLECT_IMPL(Obstacle)
         .withField("velocity", &Obstacle::velocity)
         .withField("killZ", &Obstacle::killZ)
         .build();
-}
-
-void resetInc()
-{
-    inc = 0.0F;
-    timeBeforeInc = 3.0f;
 }
 
 void obstaclePlugin(cubos::engine::Cubos& cubos)
@@ -47,12 +39,6 @@ void obstaclePlugin(cubos::engine::Cubos& cubos)
                 {
                     cmds.destroy(ent);
                 }
-            }
-            timeBeforeInc -= dt.value();
-            if (timeBeforeInc <= 0)
-            {
-                inc += 0.5f;
-                timeBeforeInc = 3.0f;
             }
             
         });

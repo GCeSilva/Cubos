@@ -84,7 +84,20 @@
             "Spawner": {
                 "scene": "d17704b4-74f6-4e6f-8b0c-633b9f17c81a",
                 "sceneRoot": "base",
-                "period": 1.0,
+                "period": 2.5,
+                "laneWidth": 9
+            }
+        },
+        "jetpack-spawner": {
+            "cubos::engine::Position": {
+                "x": 0,
+                "y": 0,
+                "z": 300
+            },
+            "Spawner": {
+                "scene": "71d69bef-8808-4525-9006-ee6c7f37c7ff",
+                "sceneRoot": "base",
+                "period": 4.0,
                 "laneWidth": 9
             }
         },
