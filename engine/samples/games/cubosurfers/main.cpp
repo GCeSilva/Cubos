@@ -4,9 +4,12 @@
 #include <cubos/engine/input/plugin.hpp>
 #include <cubos/engine/render/lights/environment.hpp>
 #include <cubos/engine/render/voxels/palette.hpp>
+#include <cubos/engine/render/voxels/grid.hpp>
+#include <cubos/engine/render/voxels/load.hpp>
 #include <cubos/engine/scene/plugin.hpp>
 #include <cubos/engine/settings/plugin.hpp>
 #include <cubos/engine/voxels/plugin.hpp>
+
 
 #include "obstacle.hpp"
 #include "player.hpp"
@@ -18,6 +21,9 @@ using namespace cubos::engine;
 static const Asset<Scene> SceneAsset = AnyAsset("ee5bb451-05b7-430f-a641-a746f7009eef");
 static const Asset<VoxelPalette> PaletteAsset = AnyAsset("101da567-3d23-46ae-a391-c10ec00e8718");
 static const Asset<InputBindings> InputBindingsAsset = AnyAsset("b20900a4-20ee-4caa-8830-14585050bead");
+
+static const Asset<VoxelGrid> shieldAsset = AnyAsset("4892c2f3-10b3-4ca7-9de3-822b77a0ba7e");
+static const Asset<VoxelGrid> jetpackAsset = AnyAsset("c7263b46-be18-47c2-b3ef-05592b2e9dec");
 
 static bool shielded = false;
 
@@ -94,7 +100,7 @@ int main()
         });
 
     cubos.system("detect player vs obstacle collisions")
-        .call([](Query<const Player&, const CollidingWith&, const PowerUp&> collisions, Query<Entity, const PowerUp&> powerUps, Commands cmds) {
+        .call([](Query<const Player&, const CollidingWith&, const PowerUp&> collisions, Query<Entity, const PowerUp&> powerUps, Commands cmds, Query<Entity, const Player&, RenderVoxelGrid&> voxels) {
             for (auto [player, collidingWith, powerUp] : collisions)
             {
                 CUBOS_INFO("Player pick a powerup!");
@@ -106,6 +112,13 @@ int main()
                     {
                         shielded = true;
                         cmds.destroy(ent);
+
+                        
+                        for (auto [ent, player, voxel] : voxels)
+                        {  
+                            voxel.asset = shieldAsset;
+                            cmds.add(ent, LoadRenderVoxels{});
+                        }
                     }
                 }
                 
