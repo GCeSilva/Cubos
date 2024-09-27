@@ -9,7 +9,9 @@
 #include <cubos/engine/scene/plugin.hpp>
 #include <cubos/engine/settings/plugin.hpp>
 #include <cubos/engine/voxels/plugin.hpp>
+#include <cubos/engine/imgui/plugin.hpp>
 
+#include <imgui.h>
 
 #include "obstacle.hpp"
 #include "player.hpp"
@@ -29,6 +31,8 @@ static const Asset<VoxelGrid> jetpackAsset = AnyAsset("c7263b46-be18-47c2-b3ef-0
 
 float inc = 0.0F;
 static float timeBeforeInc = 2.5f;
+static float timeBeforeAddingPoints = 2.0f;
+static int points = 0;
 
 int main()
 {
@@ -68,6 +72,8 @@ int main()
 
                 inc = 0.0F;
                 timeBeforeInc = 3.0f;
+                timeBeforeAddingPoints = 2.0f;
+                points = 0;
 
                 cmds.spawn(assets.read(SceneAsset)->blueprint);
             }
@@ -89,9 +95,10 @@ int main()
 
                     inc = 0.0F;
                     timeBeforeInc = 3.0f;
+                    timeBeforeAddingPoints = 2.0f;
+                    points = 0;
                     
                     cmds.spawn(assets.read(SceneAsset)->blueprint);
-                    //resetInc();
                 } 
                 else
                 {
@@ -99,6 +106,7 @@ int main()
                     {
                         if (&obstacle == &obstacle2)
                         {
+                            points += 10;
                             player.shielded = false;
                             cmds.destroy(ent);             
                         }
@@ -171,13 +179,29 @@ int main()
 
     cubos.system("accelerate game")
         .call([](const DeltaTime& dt) {
+            timeBeforeAddingPoints -= dt.value();
             timeBeforeInc -= dt.value();
             if (timeBeforeInc <= 0.0f)
             {
                 inc += 3.0f;
                 timeBeforeInc = 2.5f;
             }
+
+            if (timeBeforeAddingPoints <= 0.0f)
+            {
+                points += 1;
+                timeBeforeAddingPoints = 2.0f;
+            }
+
         });
+
+    cubos.system("show ImGui demo").tagged(imguiTag).call([]() {
+        ImGui::Begin("Dear ImGui + Cubos");
+        ImGui::Text("Points: %d", points);
+        ImGui::End();
+
+        ImGui::ShowDemoWindow();
+    });
 
     cubos.run();
 }
